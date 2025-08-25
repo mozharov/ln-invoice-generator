@@ -8,17 +8,18 @@ import errorHandler from './middleware/errorHandler.js';
 import apiRouter from './routes/api.js';
 import webRouter from './routes/web.js';
 import './db.js'; // Initialize database
+import cors from '@koa/cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = new Koa();
-
 // Trust proxy headers for correct IP detection
 app.proxy = true;
 
 // Global error handling
 app.use(errorHandler);
+app.use(cors());
 
 // Body parser middleware
 app.use(bodyParser({

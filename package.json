@@ -11,12 +11,19 @@
   "dependencies": {
     "@getalby/sdk": "^6.0.0",
     "@koa/bodyparser": "^6.0.0",
+    "@koa/cors": "^5.0.0",
     "@koa/router": "^14.0.0",
     "better-sqlite3": "^12.2.0",
     "koa": "^3.0.1",
     "koa-static": "^5.0.0"
   },
-  "keywords": ["lightning", "bitcoin", "nwc", "invoice", "generator"],
+  "keywords": [
+    "lightning",
+    "bitcoin",
+    "nwc",
+    "invoice",
+    "generator"
+  ],
   "author": "Vladislav Mozharov",
   "license": "MIT"
 }
