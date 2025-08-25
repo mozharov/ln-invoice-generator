@@ -2,7 +2,7 @@ import Router from '@koa/router';
 import crypto from 'crypto';
 import { getUserByNwcSecret, getUserById, insertUser } from '../db.js';
 import { validateNWCSecret, createInvoice } from '../services/lightning.js';
-import { validateAmount, validateDescription, validateUUID, validateNWCFormat } from '../utils/validation.js';
+import { validateAmount, validateDescription, validateNWCFormat } from '../utils/validation.js';
 import rateLimit from '../middleware/rateLimit.js';
 import config from '../config.js';
 
