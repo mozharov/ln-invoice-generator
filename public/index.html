@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightning Invoice Generator</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Lightning Invoice Generator</h1>
+            <p>Generate Lightning Network invoices for your website donations</p>
+        </header>
+
+        <main>
+            <section class="input-section">
+                <div class="form-group">
+                    <label for="nwc-secret">NWC Secret Key:</label>
+                    <textarea 
+                        id="nwc-secret" 
+                        placeholder="nostr+walletconnect://..."
+                        rows="3"
+                    ></textarea>
+                </div>
+                
+                <button id="generate-endpoint" class="btn-primary">
+                    Get Endpoint
+                </button>
+            </section>
+
+            <section id="result-section" class="result-section" style="display: none;">
+                <h2>Your Endpoint</h2>
+                <div class="endpoint-display">
+                    <input type="text" id="endpoint-url" readonly>
+                    <button id="copy-endpoint" class="btn-copy">Copy</button>
+                </div>
+                
+                <div class="integration-example">
+                    <h3>Integration Example</h3>
+                    <div class="code-block">
+                        <pre id="integration-code"></pre>
+                        <button id="copy-code" class="btn-copy">Copy Code</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="error-section" class="error-section" style="display: none;">
+                <p id="error-message"></p>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const nwcSecretInput = document.getElementById('nwc-secret');
+        const generateBtn = document.getElementById('generate-endpoint');
+        const resultSection = document.getElementById('result-section');
+        const errorSection = document.getElementById('error-section');
+        const endpointUrl = document.getElementById('endpoint-url');
+        const integrationCode = document.getElementById('integration-code');
+        const errorMessage = document.getElementById('error-message');
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorSection.style.display = 'block';
+            resultSection.style.display = 'none';
+        }
+
+        function showResult(endpoint) {
+            endpointUrl.value = endpoint;
+            
+            const exampleCode = `// Simple donation button example
+document.getElementById('donate-btn').addEventListener('click', async () => {
+    try {
+        const response = await fetch('${endpoint}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: 1000,
+                description: 'Website donation'
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Open Lightning wallet
+            window.open(\`lightning:\${data.invoice}\`);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error generating invoice:', error);
+    }
+});`;
+
+            integrationCode.textContent = exampleCode;
+            resultSection.style.display = 'block';
+            errorSection.style.display = 'none';
+        }
+
+        generateBtn.addEventListener('click', async () => {
+            const nwcSecret = nwcSecretInput.value.trim();
+            
+            if (!nwcSecret) {
+                showError('Please enter your NWC secret key');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nwc_secret: nwcSecret })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showResult(data.endpoint);
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+                console.error('Registration error:', error);
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Get Endpoint';
+            }
+        });
+
+        document.getElementById('copy-endpoint').addEventListener('click', () => {
+            endpointUrl.select();
+            document.execCommand('copy');
+            
+            const btn = document.getElementById('copy-endpoint');
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        });
+
+        document.getElementById('copy-code').addEventListener('click', () => {
+            const textArea = document.createElement('textarea');
+            textArea.value = integrationCode.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const btn = document.getElementById('copy-code');
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
